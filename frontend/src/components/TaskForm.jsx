@@ -1,72 +1,40 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import axiosInstance from '../axiosConfig';
+import { useNavigate } from 'react-router-dom';
 
-const TaskForm = ({ tasks, setTasks, editingTask, setEditingTask }) => {
-  const { user } = useAuth();
-  const [formData, setFormData] = useState({ title: '', description: '', deadline: '' });
+const Dashboard = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (editingTask) {
-      setFormData({
-        title: editingTask.title,
-        description: editingTask.description,
-        deadline: editingTask.deadline,
-      });
-    } else {
-      setFormData({ title: '', description: '', deadline: '' });
-    }
-  }, [editingTask]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingTask) {
-        const response = await axiosInstance.put(`/api/tasks/${editingTask._id}`, formData, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
-        setTasks(tasks.map((task) => (task._id === response.data._id ? response.data : task)));
-      } else {
-        const response = await axiosInstance.post('/api/tasks', formData, {
-          headers: { Authorization: `Bearer ${user.token}` },
-        });
-        setTasks([...tasks, response.data]);
-      }
-      setEditingTask(null);
-      setFormData({ title: '', description: '', deadline: '' });
-    } catch (error) {
-      alert('Failed to save task.');
-    }
-  };
+  const menuItems = [
+    { title: 'Bookings', description: 'Explore and book homestays.', path: '/browse' },
+    { title: 'My Bookings', description: 'View and manage your reservations.', path: '/my-bookings' },
+    { title: 'My Profile', description: 'Update personal details and preferences.', path: '/profile' },
+  ];
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-6 shadow-md rounded mb-6">
-      <h1 className="text-2xl font-bold mb-4">{editingTask ? 'Your Form Name: Edit Operation' : 'Your Form Name: Create Operation'}</h1>
-      <input
-        type="text"
-        placeholder="Title"
-        value={formData.title}
-        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-        className="w-full mb-4 p-2 border rounded"
-      />
-      <input
-        type="text"
-        placeholder="Description"
-        value={formData.description}
-        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-        className="w-full mb-4 p-2 border rounded"
-      />
-      <input
-        type="date"
-        value={formData.deadline}
-        onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-        className="w-full mb-4 p-2 border rounded"
-      />
-      <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
-        {editingTask ? 'Update Button' : 'Create Button'}
-      </button>
-    </form>
+    <div className="min-h-screen bg-gray-100">
+      
+
+      {/* Main Content */}
+      <div className="container mx-auto mt-10 text-center">
+        <h1 className="text-3xl font-bold">Welcome, {user?.name} 🏡</h1>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          {menuItems.map((item, index) => (
+            <div
+              key={index}
+              className="bg-white shadow-md rounded-lg p-6 hover:shadow-lg cursor-pointer"
+              onClick={() => navigate(item.path)}
+            >
+              <h2 className="text-xl font-semibold">{item.title}</h2>
+              <p className="text-gray-600">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 };
 
-export default TaskForm;
+export default Dashboard;
